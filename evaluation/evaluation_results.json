@@ -1,0 +1,8 @@
+{
+  "Precision@5": 0.26,
+  "Recall@5": 1.0,
+  "MRR": 0.95,
+  "CitationAccuracy": 1.0,
+  "Faithfulness": 1.0,
+  "TotalQueries": 10
+}

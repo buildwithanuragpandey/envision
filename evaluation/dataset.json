@@ -1,0 +1,72 @@
+[
+  {
+    "id": "q1",
+    "question": "What is the physical qubit count and average coherence time of the Hyperion-X processor?",
+    "expected_document": "Quantum_Computing_2026_Advancements.pdf",
+    "expected_page": 1,
+    "key_facts": ["1,024 physical qubits", "320 microseconds", "coherence time"]
+  },
+  {
+    "id": "q2",
+    "question": "What was the logical error rate achieved with the distance-7 surface code on Hyperion-X?",
+    "expected_document": "Quantum_Computing_2026_Advancements.pdf",
+    "expected_page": 2,
+    "key_facts": ["1.2 x 10^-6", "surface code", "450 nanoseconds"]
+  },
+  {
+    "id": "q3",
+    "question": "How fast did the quantum processor complete the FeMo-cofactor simulation compared to Frontier supercomputer?",
+    "expected_document": "Quantum_Computing_2026_Advancements.pdf",
+    "expected_page": 3,
+    "key_facts": ["184 seconds", "4,200 years", "Frontier"]
+  },
+  {
+    "id": "q4",
+    "question": "What is the gravimetric energy density and cycle life of the solid-state Lithium-Sulfur batteries?",
+    "expected_document": "Renewable_Energy_Storage_Breakthroughs.pdf",
+    "expected_page": 1,
+    "key_facts": ["650 Wh/kg", "1,500 full charge-discharge cycles", "85% capacity retention"]
+  },
+  {
+    "id": "q5",
+    "question": "What is the AC-to-AC round-trip efficiency of the utility-scale vanadium redox flow batteries?",
+    "expected_document": "Renewable_Energy_Storage_Breakthroughs.pdf",
+    "expected_page": 2,
+    "key_facts": ["82.4%", "100 MW / 800 MWh", "vanadium"]
+  },
+  {
+    "id": "q6",
+    "question": "What is the levelized cost of storage (LCOS) per MWh reported in 2026?",
+    "expected_document": "Renewable_Energy_Storage_Breakthroughs.pdf",
+    "expected_page": 3,
+    "key_facts": ["$68 per MWh", "45% reduction"]
+  },
+  {
+    "id": "q7",
+    "question": "What was the diagnostic sensitivity and specificity of the OmniVision-Med transformer model?",
+    "expected_document": "AI_in_Medical_Diagnostics_Report.pdf",
+    "expected_page": 1,
+    "key_facts": ["98.4%", "96.1%", "45,000"]
+  },
+  {
+    "id": "q8",
+    "question": "What AUC was achieved when combining gigapixel whole-slide imaging with genomic variant profiles?",
+    "expected_document": "AI_in_Medical_Diagnostics_Report.pdf",
+    "expected_page": 2,
+    "key_facts": ["0.978", "non-small cell lung cancer", "3.2 seconds"]
+  },
+  {
+    "id": "q9",
+    "question": "When did the FDA grant 510(k) clearance for OmniVision-Med as a Class II device?",
+    "expected_document": "AI_in_Medical_Diagnostics_Report.pdf",
+    "expected_page": 3,
+    "key_facts": ["Q3 2025", "Class II", "510(k)"]
+  },
+  {
+    "id": "q10",
+    "question": "Compare the energy breakthroughs in lithium-sulfur batteries with the computational speed of the Hyperion-X quantum processor.",
+    "expected_document": "multi_doc",
+    "expected_page": 1,
+    "key_facts": ["650 Wh/kg", "184 seconds", "1,024 physical qubits"]
+  }
+]
