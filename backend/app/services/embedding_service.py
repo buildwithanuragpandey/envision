@@ -7,22 +7,43 @@ class EmbeddingService:
     def __init__(self, model_name: str = settings.EMBEDDING_MODEL):
         self.model_name = model_name
         self._model = None
+        self._model_type = None  # "fastembed", "sentence_transformers", "fallback"
         self._dimension = 384  # default for bge-small-en / all-MiniLM-L6-v2
 
     def _get_model(self):
         if self._model is None:
+            # 1. Try lightweight fastembed (ONNX runtime, ~40MB RAM, no PyTorch)
+            try:
+                from fastembed import TextEmbedding
+                logger.info(f"Loading FastEmbed model: {self.model_name}")
+                self._model = TextEmbedding(model_name=self.model_name)
+                self._model_type = "fastembed"
+                sample_emb = list(self._model.embed(["test"]))[0]
+                self._dimension = len(sample_emb)
+                logger.info(f"FastEmbed model loaded successfully (dimension={self._dimension}).")
+                return self._model
+            except Exception as e:
+                logger.info(f"FastEmbed not available or failed to load: {e}")
+
+            # 2. Try SentenceTransformer if installed
             try:
                 from sentence_transformers import SentenceTransformer
                 logger.info(f"Loading SentenceTransformer embedding model: {self.model_name}")
                 self._model = SentenceTransformer(self.model_name)
+                self._model_type = "sentence_transformers"
                 sample_emb = self._model.encode(["test"])
                 self._dimension = sample_emb.shape[1]
-                logger.info(f"Embedding model loaded successfully (dimension={self._dimension}).")
+                logger.info(f"SentenceTransformer loaded successfully (dimension={self._dimension}).")
+                return self._model
             except Exception as e:
                 logger.warning(
                     f"Could not load SentenceTransformer '{self.model_name}': {e}. Using deterministic fallback embedder."
                 )
-                self._model = "fallback"
+
+            # 3. Deterministic fallback embedder
+            self._model = "fallback"
+            self._model_type = "fallback"
+
         return self._model
 
     def _fallback_embed(self, texts: List[str]) -> List[List[float]]:
@@ -61,20 +82,28 @@ class EmbeddingService:
             return []
         
         model = self._get_model()
-        if model == "fallback":
-            return self._fallback_embed(texts)
-        
-        try:
-            embeddings = model.encode(
-                texts,
-                batch_size=settings.EMBEDDING_BATCH_SIZE,
-                show_progress_bar=False,
-                normalize_embeddings=True
-            )
-            return embeddings.tolist()
-        except Exception as e:
-            logger.error(f"Error generating embeddings with sentence_transformers: {e}. Falling back.")
-            return self._fallback_embed(texts)
+        if self._model_type == "fastembed":
+            try:
+                embeddings = list(model.embed(texts, batch_size=settings.EMBEDDING_BATCH_SIZE))
+                return [e.tolist() if hasattr(e, "tolist") else list(e) for e in embeddings]
+            except Exception as e:
+                logger.error(f"Error generating embeddings with fastembed: {e}. Falling back.")
+                return self._fallback_embed(texts)
+
+        if self._model_type == "sentence_transformers":
+            try:
+                embeddings = model.encode(
+                    texts,
+                    batch_size=settings.EMBEDDING_BATCH_SIZE,
+                    show_progress_bar=False,
+                    normalize_embeddings=True
+                )
+                return embeddings.tolist()
+            except Exception as e:
+                logger.error(f"Error generating embeddings with sentence_transformers: {e}. Falling back.")
+                return self._fallback_embed(texts)
+
+        return self._fallback_embed(texts)
 
     def embed_query(self, text: str) -> List[float]:
         """

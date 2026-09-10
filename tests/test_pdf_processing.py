@@ -1,6 +1,6 @@
 import os
 import pytest
-import fitz
+import pymupdf as fitz
 from app.services.pdf_service import pdf_service, PDFProcessingError
 from app.schemas.document import DocumentStatus
 

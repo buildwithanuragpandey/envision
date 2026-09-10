@@ -1,7 +1,7 @@
 import hashlib
 import uuid
 import re
-import fitz  # PyMuPDF
+import pymupdf as fitz  # PyMuPDF
 from typing import List, Tuple, Optional
 from app.core.logging import logger
 from app.schemas.document import PageContent, DocumentMetadata, DocumentStatus

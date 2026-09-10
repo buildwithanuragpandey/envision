@@ -11,10 +11,22 @@ class RerankingService:
     def _get_model(self):
         if self._model is None and self.enabled:
             try:
+                from fastembed.rerank.cross_encoder import TextCrossEncoder
+                logger.info(f"Loading FastEmbed CrossEncoder reranker model: {self.model_name}")
+                self._model = TextCrossEncoder(model_name=self.model_name)
+                logger.info("FastEmbed CrossEncoder model loaded successfully.")
+                self._model_type = "fastembed"
+                return self._model
+            except Exception as e:
+                logger.info(f"FastEmbed CrossEncoder not loaded: {e}")
+
+            try:
                 from sentence_transformers import CrossEncoder
                 logger.info(f"Loading CrossEncoder reranker model: {self.model_name}")
                 self._model = CrossEncoder(self.model_name)
                 logger.info("CrossEncoder model loaded successfully.")
+                self._model_type = "sentence_transformers"
+                return self._model
             except Exception as e:
                 logger.warning(f"Failed to load CrossEncoder reranker '{self.model_name}': {e}. Continuing without reranking.")
                 self.enabled = False
@@ -37,12 +49,16 @@ class RerankingService:
             return chunks[:top_n]
 
         try:
-            pairs = [[query, chunk["content"]] for chunk in chunks]
-            scores = model.predict(pairs)
-
-            # Assign rerank scores and sort
-            for i, chunk in enumerate(chunks):
-                chunk["rerank_score"] = float(scores[i])
+            if getattr(self, "_model_type", None) == "fastembed":
+                doc_texts = [chunk["content"] for chunk in chunks]
+                scores = list(model.rerank(query, doc_texts))
+                for i, chunk in enumerate(chunks):
+                    chunk["rerank_score"] = float(scores[i])
+            else:
+                pairs = [[query, chunk["content"]] for chunk in chunks]
+                scores = model.predict(pairs)
+                for i, chunk in enumerate(chunks):
+                    chunk["rerank_score"] = float(scores[i])
 
             ranked_chunks = sorted(chunks, key=lambda x: x.get("rerank_score", 0.0), reverse=True)
             return ranked_chunks[:top_n]
