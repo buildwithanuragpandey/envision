@@ -11,6 +11,11 @@ async def lifespan(app: FastAPI):
     logger.info(f"Active LLM Provider: {settings.LLM_PROVIDER} | Model: {settings.LLM_MODEL}")
     logger.info(f"Embedding Model: {settings.EMBEDDING_MODEL}")
     logger.info(f"Vector Store Directory: {settings.CHROMA_PERSIST_DIRECTORY}")
+    try:
+        from app.services.embedding_service import embedding_service
+        embedding_service._get_model()
+    except Exception as e:
+        logger.warning(f"Could not pre-warm embedding model: {e}")
     yield
     logger.info("Shutting down DocuMind AI...")
 
@@ -35,7 +40,7 @@ app.include_router(documents.router, prefix=settings.API_PREFIX)
 app.include_router(chat.router, prefix=settings.API_PREFIX)
 app.include_router(health.router, prefix=settings.API_PREFIX)
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def root():
     return {
         "app": settings.PROJECT_NAME,

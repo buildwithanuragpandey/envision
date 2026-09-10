@@ -7,7 +7,7 @@ from app.api.routes.documents import _load_registry
 
 router = APIRouter(tags=["Health & Analytics"])
 
-@router.get("/health", response_model=HealthStatus)
+@router.api_route("/health", methods=["GET", "HEAD"], response_model=HealthStatus)
 async def health_check():
     """
     Health check endpoint.
