@@ -23,43 +23,45 @@ class VectorStoreService:
         )
         self.collection = self.client.get_or_create_collection(
             name=self.COLLECTION_NAME,
+            embedding_function=None,
             metadata={"description": "DocuMind multi-PDF knowledge chunks"}
         )
         logger.info(f"Initialized ChromaDB vector store at '{self.persist_directory}' (Collection count: {self.collection.count()})")
 
     def add_chunks(self, chunks: List[TextChunk]) -> int:
         """
-        Embeds and indexes a list of TextChunks into ChromaDB.
+        Embeds and indexes a list of TextChunks into ChromaDB using streaming micro-batches
+        to preserve low memory consumption on resource-constrained environments (e.g. Render 512MB RAM).
         """
         if not chunks:
             return 0
 
-        # Batch embed
-        texts = [chunk.content for chunk in chunks]
-        embeddings = embedding_service.embed_documents(texts)
-
-        ids = [chunk.chunk_id for chunk in chunks]
-        metadatas = [
-            {
-                "document_id": chunk.document_id,
-                "filename": chunk.filename,
-                "page_number": int(chunk.page_number),
-                "chunk_index": int(chunk.chunk_index),
-                "document_hash": chunk.document_hash,
-            }
-            for chunk in chunks
-        ]
-
-        # Insert into Chroma in batches of 100
-        batch_size = 100
+        # Micro-batch to keep memory footprint flat
+        batch_size = 16
         for i in range(0, len(chunks), batch_size):
-            end_idx = i + batch_size
+            batch = chunks[i:i + batch_size]
+            batch_texts = [chunk.content for chunk in batch]
+            batch_embeddings = embedding_service.embed_documents(batch_texts)
+            batch_ids = [chunk.chunk_id for chunk in batch]
+            batch_metadatas = [
+                {
+                    "document_id": chunk.document_id,
+                    "filename": chunk.filename,
+                    "page_number": int(chunk.page_number),
+                    "chunk_index": int(chunk.chunk_index),
+                    "document_hash": chunk.document_hash,
+                }
+                for chunk in batch
+            ]
             self.collection.upsert(
-                ids=ids[i:end_idx],
-                embeddings=embeddings[i:end_idx],
-                documents=texts[i:end_idx],
-                metadatas=metadatas[i:end_idx]
+                ids=batch_ids,
+                embeddings=batch_embeddings,
+                documents=batch_texts,
+                metadatas=batch_metadatas
             )
+            del batch_texts, batch_embeddings, batch_ids, batch_metadatas
+            import gc
+            gc.collect()
 
         logger.info(f"Successfully added {len(chunks)} chunks to ChromaDB.")
         return len(chunks)

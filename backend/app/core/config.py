@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
+from pydantic import Field, field_validator
 from typing import Optional, List
 import os
 
@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     
     # Embedding Settings
     EMBEDDING_MODEL: str = Field(default="BAAI/bge-small-en-v1.5", description="HuggingFace embedding model or sentence-transformers model")
-    EMBEDDING_BATCH_SIZE: int = Field(default=32, description="Batch size for generating embeddings")
+    EMBEDDING_BATCH_SIZE: int = Field(default=8, description="Batch size for generating embeddings")
     
     # Storage Paths
     BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -37,9 +37,29 @@ class Settings(BaseSettings):
     
     # CORS
     ALLOWED_ORIGINS: List[str] = Field(
-        default=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:8000", "*"]
+        default=[
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:8000",
+            "https://documind-api-olive.vercel.app",
+            "*"
+        ]
     )
     
+    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, v):
+        if isinstance(v, str):
+            v = v.strip()
+            if v.startswith("[") and v.endswith("]"):
+                import json
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

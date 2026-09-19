@@ -99,10 +99,15 @@ async def upload_documents(files: List[UploadFile] = File(...)):
 
             # Step 1 & 2 & 3: Validate & Extract pages
             meta, pages = pdf_service.validate_and_extract(content, file.filename, document_id=doc_id)
+            del content
+            import gc
+            gc.collect()
 
             # Step 4: Chunk pages
             chunks = chunking_service.chunk_pages(pages, meta)
             meta.chunk_count = len(chunks)
+            del pages
+            gc.collect()
 
             # Step 5: Embed & Index in Vector DB
             if chunks:
@@ -111,6 +116,8 @@ async def upload_documents(files: List[UploadFile] = File(...)):
             else:
                 meta.status = DocumentStatus.FAILED
                 meta.error_message = "No extractable text found in PDF."
+            del chunks
+            gc.collect()
 
             # Update registry
             registry[doc_id] = meta.model_dump()

@@ -16,7 +16,8 @@ class EmbeddingService:
             try:
                 from fastembed import TextEmbedding
                 logger.info(f"Loading FastEmbed model: {self.model_name}")
-                self._model = TextEmbedding(model_name=self.model_name)
+                # Restrict threads=1 to prevent ONNX Runtime from allocating excessive thread pools on multi-core hosts (e.g. Render)
+                self._model = TextEmbedding(model_name=self.model_name, threads=1)
                 self._model_type = "fastembed"
                 sample_emb = list(self._model.embed(["test"]))[0]
                 self._dimension = len(sample_emb)
@@ -84,10 +85,14 @@ class EmbeddingService:
         model = self._get_model()
         if self._model_type == "fastembed":
             try:
-                embeddings = list(model.embed(texts, batch_size=settings.EMBEDDING_BATCH_SIZE))
-                return [e.tolist() if hasattr(e, "tolist") else list(e) for e in embeddings]
+                batch_size = min(settings.EMBEDDING_BATCH_SIZE, 16)
+                embeddings = list(model.embed(texts, batch_size=batch_size))
+                result = [e.tolist() if hasattr(e, "tolist") else list(e) for e in embeddings]
+                import gc
+                gc.collect()
+                return result
             except Exception as e:
-                logger.error(f"Error generating embeddings with fastembed: {e}. Falling back.")
+                logger.error(f"Error generating embeddings with fastembed: {e}. Falling back to deterministic embedder.")
                 return self._fallback_embed(texts)
 
         if self._model_type == "sentence_transformers":
