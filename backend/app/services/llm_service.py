@@ -87,7 +87,13 @@ class LLMService:
         if history:
             # Include recent turns
             for item in history[-6:]:
-                messages.append({"role": item.get("role", "user"), "content": item.get("content", "")})
+                if isinstance(item, dict):
+                    role = item.get("role", "user")
+                    content = item.get("content", "")
+                else:
+                    role = getattr(item, "role", "user")
+                    content = getattr(item, "content", "")
+                messages.append({"role": role, "content": content})
 
         messages.append({"role": "user", "content": prompt})
 
@@ -114,7 +120,7 @@ class LLMService:
         client = AsyncGroq(api_key=self.api_key)
         try:
             stream = await client.chat.completions.create(
-                model=self.model or "qwen/qwen3.6-27b",
+                model=self.model or "llama-3.3-70b-versatile",
                 messages=messages,
                 temperature=settings.LLM_TEMPERATURE,
                 stream=True

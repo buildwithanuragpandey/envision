@@ -57,9 +57,22 @@ def test_upload_and_chat_pipeline():
     assert chat_res.status_code == 200
     chat_data = chat_res.json()
     assert "answer" in chat_data
-    assert len(chat_data["sources"]) > 0
     assert chat_data["sources"][0]["filename"] == "test_manual.pdf"
     assert chat_data["is_grounded"] is True
+
+    # 5. Stream Chat with History
+    stream_res = client.post(
+        "/api/chat/stream",
+        json={
+            "message": "Can you explain it more?",
+            "history": [
+                {"role": "user", "content": "What is DocuMind designed for?"},
+                {"role": "assistant", "content": "DocuMind is an advanced Multi-PDF RAG assistant."}
+            ]
+        }
+    )
+    assert stream_res.status_code == 200
+    assert "event: token" in stream_res.text or "event: done" in stream_res.text
 
 def test_delete_document():
     # Create and upload

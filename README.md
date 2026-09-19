@@ -11,7 +11,7 @@ DocuMind AI is a production-grade Retrieval-Augmented Generation (RAG) platform 
 - **Multi-PDF Document Processing:** Ingest and manage up to 50 PDF documents simultaneously with page-by-page extraction via **PyMuPDF (`fitz`)**.
 - **Intelligent SHA-256 Deduplication:** Computes cryptographic hashes for uploaded documents to bypass redundant parsing and embedding operations.
 - **Sub-100ms Vector Retrieval:** Persistent vector storage powered by **ChromaDB** with cosine similarity thresholding and document-scoped filtering.
-- **Flexible LLM Provider Abstraction:** Seamlessly switch between **Groq** (`qwen/qwen3.6-27b`, `openai/gpt-oss-120b`, `openai/gpt-oss-20b`), **OpenAI** (`gpt-4o`, `gpt-4o-mini`), **Google Gemini** (`gemini-1.5-flash`), **Ollama**, or the offline grounded fallback synthesizer.
+- **Flexible LLM Provider Abstraction:** Seamlessly switch between **Groq** (`llama-3.3-70b-versatile`, `llama-3.1-8b-instant`), **OpenAI** (`gpt-4o`, `gpt-4o-mini`), **Google Gemini** (`gemini-1.5-flash`), **Ollama**, or the offline grounded fallback synthesizer.
 - **Conversational Memory & Contextual Reformulation:** Understands follow-up questions referencing previous answers while maintaining strict document-grounded retrieval.
 - **Verifiable Citation & Grounding System:** Every AI response includes clickable source badges linking directly to document names, page numbers, and exact chunk snippets.
 - **Anti-Hallucination Guardrails:** Low-confidence similarity threshold rejection prevents speculative AI hallucinations.

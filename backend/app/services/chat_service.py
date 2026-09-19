@@ -25,8 +25,12 @@ class ChatService:
         last_user = ""
         last_assistant = ""
         for item in reversed(history):
-            role = getattr(item, "role", item.get("role", "")) if not isinstance(item, dict) else item.get("role", "")
-            content = getattr(item, "content", item.get("content", "")) if not isinstance(item, dict) else item.get("content", "")
+            if isinstance(item, dict):
+                role = item.get("role", "")
+                content = item.get("content", "")
+            else:
+                role = getattr(item, "role", "")
+                content = getattr(item, "content", "")
             if role == "assistant" and not last_assistant:
                 last_assistant = content
             elif role == "user" and not last_user:
