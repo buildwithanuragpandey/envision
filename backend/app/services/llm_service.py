@@ -114,7 +114,7 @@ class LLMService:
         client = AsyncGroq(api_key=self.api_key)
         try:
             stream = await client.chat.completions.create(
-                model=self.model or "llama-3.3-70b-versatile",
+                model=self.model or "qwen/qwen3.6-27b",
                 messages=messages,
                 temperature=settings.LLM_TEMPERATURE,
                 stream=True

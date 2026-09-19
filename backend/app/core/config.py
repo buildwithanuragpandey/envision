@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     
     # LLM Settings
     LLM_PROVIDER: str = Field(default="groq", description="LLM provider: groq, openai, gemini, ollama, mock")
-    LLM_MODEL: str = Field(default="llama-3.3-70b-versatile", description="Model name for provider")
+    LLM_MODEL: str = Field(default="qwen/qwen3.6-27b", description="Model name for provider (e.g. qwen/qwen3.6-27b, openai/gpt-oss-120b, openai/gpt-oss-20b)")
     LLM_API_KEY: Optional[str] = Field(default=None, description="API Key for the chosen provider")
     LLM_TEMPERATURE: float = Field(default=0.1, description="Sampling temperature")
     LLM_BASE_URL: Optional[str] = Field(default=None, description="Optional base URL for OpenAI-compatible or Ollama endpoints")
